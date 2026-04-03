@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: ai-debugging-assistant
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aiddebugging
+    username: aiddebug
+    password: aiddebug
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+app:
+  openai:
+    max-attempts: 2
+    response-timeout: 10s
+  cors:
+    allowed-origins: http://localhost:5173
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Set in environment (never commit):
+# OPENAI_API_KEY=

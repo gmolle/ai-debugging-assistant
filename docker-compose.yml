@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aiddebug
+      POSTGRES_PASSWORD: aiddebug
+      POSTGRES_DB: aiddebugging
+    ports:
+      - "5432:5432"
+    volumes:
+      - aid_pg_data:/var/lib/postgresql/data
+
+volumes:
+  aid_pg_data:

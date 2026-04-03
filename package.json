@@ -1,0 +1,22 @@
+{
+  "name": "ai-debugging-assistant",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "up": "docker compose up -d",
+    "dev": "npm run up && wait-on tcp:5432 && concurrently -k -n backend,frontend -c blue,magenta \"npm run dev:backend\" \"npm run dev -w frontend\"",
+    "dev:offline": "concurrently -k -n backend,frontend -c blue,magenta \"npm run dev:backend:local\" \"npm run dev -w frontend\"",
+    "dev:backend": "node scripts/mvnw.cjs spring-boot:run",
+    "dev:backend:local": "node scripts/mvnw.cjs spring-boot:run -Dspring-boot.run.profiles=local",
+    "verify": "npm run verify:backend && npm run verify:frontend",
+    "verify:integration": "npm run up && wait-on tcp:5432 && npm run verify",
+    "verify:backend": "node scripts/mvnw.cjs -q test",
+    "verify:frontend": "npm run build -w frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "wait-on": "^8.0.1"
+  }
+}
