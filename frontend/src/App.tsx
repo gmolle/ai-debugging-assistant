@@ -178,7 +178,7 @@ export default function App() {
   return (
     <div
       ref={shellRef}
-      className="min-h-screen bg-zinc-950 bg-[radial-gradient(ellipse_110%_55%_at_50%_-8%,rgb(245_158_11_/_0.06),transparent_52%)] text-zinc-100"
+      className="min-h-screen bg-zinc-950 bg-[radial-gradient(ellipse_120%_50%_at_50%_-5%,rgb(245_158_11_/_0.075),transparent_55%)] bg-fixed text-zinc-100"
     >
       <header
         ref={headerRef}
