@@ -55,6 +55,8 @@ export interface CodeMirrorFieldProps {
   readOnly?: boolean;
   height: string;
   lineNumbers?: boolean;
+  /** Darker inset style for code inside analysis cards */
+  variant?: "default" | "embedded";
   className?: string;
 }
 
@@ -67,6 +69,7 @@ export function CodeMirrorField({
   readOnly = false,
   height,
   lineNumbers: showLineNumbers = true,
+  variant = "default",
   className = "",
 }: CodeMirrorFieldProps) {
   const extensions = useMemo(() => {
@@ -87,10 +90,13 @@ export function CodeMirrorField({
     return ext;
   }, [mode, language, placeholderText, readOnly, showLineNumbers]);
 
+  const shell =
+    variant === "embedded"
+      ? "cursor-text overflow-hidden rounded-lg border border-zinc-800/90 bg-[#121110] shadow-[inset_0_1px_0_0_rgb(255_255_255_/_0.04)] ring-1 ring-zinc-950/80 transition-[box-shadow,border-color] focus-within:border-amber-500/35 focus-within:ring-amber-500/10"
+      : "cursor-text overflow-hidden rounded-xl border border-zinc-700/70 bg-[#1c1b1a] shadow-panel-inset ring-1 ring-white/[0.04] transition-[box-shadow,border-color] focus-within:border-amber-500/40 focus-within:ring-amber-500/12";
+
   return (
-    <div
-      className={`overflow-hidden rounded-lg border border-slate-700 bg-[#1e1e1e] focus-within:border-emerald-600/60 focus-within:ring-1 focus-within:ring-emerald-600/40 ${className} cursor-text`}
-    >
+    <div className={`${shell} ${className}`}>
       <CodeMirror
         value={value}
         height={height}

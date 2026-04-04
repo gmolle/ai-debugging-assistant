@@ -36,17 +36,23 @@ export function HistorySidebar({
   onRetry,
 }: HistorySidebarProps) {
   return (
-    <aside className="border-t border-slate-800 bg-slate-900/40 xl:w-80 xl:shrink-0 xl:border-l xl:border-t-0">
-      <div className="sticky top-0 flex flex-col gap-3 p-4 xl:max-h-screen xl:overflow-y-auto">
+    <aside className="border-t border-zinc-800/60 bg-zinc-950/30 xl:sticky xl:top-[var(--app-header-h)] xl:max-h-[calc(100dvh-var(--app-header-h))] xl:self-start xl:overflow-y-auto xl:w-80 xl:shrink-0 xl:border-l xl:border-t-0 xl:bg-gradient-to-l xl:from-zinc-900/25 xl:to-transparent">
+      <div className="flex flex-col gap-4 p-5">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
-            Recent
-          </h2>
+          <div className="flex items-center gap-2">
+            <span
+              className="h-px w-5 bg-amber-500/40"
+              aria-hidden
+            />
+            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Recent
+            </h2>
+          </div>
           <button
             type="button"
             onClick={onRetry}
             disabled={loading}
-            className="text-xs text-emerald-500/90 hover:text-emerald-400 disabled:opacity-40"
+            className="rounded-lg px-2 py-1 text-xs font-medium text-amber-400/90 transition hover:bg-amber-950/40 hover:text-amber-200 disabled:opacity-40"
           >
             Refresh
           </button>
@@ -59,27 +65,27 @@ export function HistorySidebar({
         )}
 
         {loading && items.length === 0 && (
-          <p className="text-sm text-slate-500">Loading…</p>
+          <p className="text-sm text-zinc-500">Loading…</p>
         )}
 
         {!loading && !error && items.length === 0 && (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-zinc-500">
             Saved analyses appear here after a successful run (Postgres +
-            <code className="mx-1 text-slate-400">persist-results</code>).
+            <code className="mx-1 text-zinc-400">persist-results</code>).
           </p>
         )}
 
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2.5">
           {items.map((item) => {
             const active = item.id === selectedId;
             const deleting = item.id === deletingId;
             return (
               <li key={item.id}>
                 <div
-                  className={`group relative rounded-lg border text-left transition ${
+                  className={`group relative rounded-xl border text-left shadow-sm transition ${
                     active
-                      ? "border-emerald-600/50 bg-emerald-950/30 ring-1 ring-emerald-600/30"
-                      : "border-slate-800 bg-slate-900/60 hover:border-slate-600"
+                      ? "border-amber-500/40 bg-amber-950/20 ring-1 ring-amber-500/15"
+                      : "border-zinc-800/70 bg-zinc-900/40 ring-1 ring-white/[0.03] hover:border-zinc-700/80 hover:bg-zinc-900/55"
                   }`}
                 >
                   <button
@@ -87,7 +93,7 @@ export function HistorySidebar({
                     onClick={() => onSelect(item.id)}
                     className="w-full px-3 py-2.5 pr-10 text-left"
                   >
-                    <div className="flex min-w-0 items-center gap-2 text-xs text-slate-500">
+                    <div className="flex min-w-0 items-center gap-2 text-xs text-zinc-500">
                       <span className="min-w-0 truncate">
                         {formatWhen(item.createdAt)}
                       </span>
@@ -97,11 +103,11 @@ export function HistorySidebar({
                         {item.language}
                       </span>
                     </div>
-                    <p className="mt-1 line-clamp-2 text-sm font-medium text-slate-200">
+                    <p className="mt-1 line-clamp-2 text-sm font-medium text-zinc-200">
                       {item.rootCauseSummary}
                     </p>
                     {item.stackHeadline && (
-                      <p className="mt-1 line-clamp-1 font-mono text-xs text-slate-500">
+                      <p className="mt-1 line-clamp-1 font-mono text-xs text-zinc-500">
                         {item.stackHeadline}
                       </p>
                     )}
@@ -112,11 +118,11 @@ export function HistorySidebar({
                     title="Remove from history"
                     aria-label={`Delete analysis from ${formatWhen(item.createdAt)}`}
                     onClick={() => onDelete(item.id)}
-                    className="absolute right-1.5 top-1.5 z-10 rounded-md p-1.5 text-slate-500 transition hover:bg-rose-950/55 hover:text-rose-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-40 [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100"
+                    className="absolute right-1.5 top-1.5 z-10 rounded-md p-1.5 text-zinc-500 transition hover:bg-rose-950/55 hover:text-rose-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-40 [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100"
                   >
                     {deleting ? (
                       <span
-                        className="block h-4 w-4 animate-pulse rounded-sm bg-slate-600"
+                        className="block h-4 w-4 animate-pulse rounded-sm bg-zinc-600"
                         aria-hidden
                       />
                     ) : (

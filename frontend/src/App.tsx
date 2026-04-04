@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { AnalysisRequestError, requestAnalysis } from "./api/analyze";
 import {
   deleteAnalysis,
@@ -31,6 +38,9 @@ const LANGUAGES: Language[] = [
 ];
 
 export default function App() {
+  const shellRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
   const [stackTrace, setStackTrace] = useState("");
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState<Language>("Java");
@@ -69,6 +79,19 @@ export default function App() {
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
+
+  useLayoutEffect(() => {
+    const shell = shellRef.current;
+    const header = headerRef.current;
+    if (!shell || !header) return;
+    const sync = () => {
+      shell.style.setProperty("--app-header-h", `${header.offsetHeight}px`);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(header);
+    return () => ro.disconnect();
+  }, []);
 
   const canSubmit =
     stackTrace.trim().length > 0 && code.trim().length > 0 && !loading;
@@ -153,25 +176,40 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800/80 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-          <h1 className="text-xl font-semibold tracking-tight">
+    <div
+      ref={shellRef}
+      className="min-h-screen bg-zinc-950 bg-[radial-gradient(ellipse_110%_55%_at_50%_-8%,rgb(245_158_11_/_0.06),transparent_52%)] text-zinc-100"
+    >
+      <header
+        ref={headerRef}
+        className="sticky top-0 z-20 border-b border-zinc-800/50 bg-zinc-950 px-6 py-5 backdrop-blur-md"
+      >
+        <div className="mx-auto flex max-w-6xl flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">
             AI Debugging Assistant
           </h1>
+          <p className="max-w-xl text-sm leading-relaxed text-zinc-500">
+            Paste a stack trace and the related code — get root cause, context,
+            and copy-ready fixes.
+          </p>
         </div>
       </header>
 
       <div className="mx-auto flex max-w-6xl flex-col xl:flex-row">
-        <main className="min-w-0 flex-1 py-8 pr-6">
-          <form onSubmit={onSubmit} className="space-y-8">
-            <section className="space-y-4">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
-                Input
-              </h2>
+        <main className="min-w-0 flex-1 pr-6 py-10">
+          <form onSubmit={onSubmit} className="space-y-10">
+            <section className="space-y-5 rounded-2xl border border-zinc-800/60 bg-zinc-900/20 p-6 shadow-panel">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-amber-500/45" aria-hidden />
+                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  Input
+                </h2>
+              </div>
               <div className="grid gap-6 lg:grid-cols-2">
                 <label className="block min-h-0 space-y-2">
-                  <span className="text-sm text-slate-300">Stack trace</span>
+                  <span className="text-sm font-medium text-zinc-400">
+                    Stack trace
+                  </span>
                   <CodeMirrorField
                     mode="plaintext"
                     value={stackTrace}
@@ -184,7 +222,9 @@ export default function App() {
                   />
                 </label>
                 <label className="block min-h-0 space-y-2">
-                  <span className="text-sm text-slate-300">Code snippet</span>
+                  <span className="text-sm font-medium text-zinc-400">
+                    Code snippet
+                  </span>
                   <CodeMirrorField
                     mode="code"
                     language={language}
@@ -198,16 +238,22 @@ export default function App() {
                   />
                 </label>
               </div>
-              <div className="flex flex-wrap items-end gap-4">
-                <label className="block space-y-2">
-                  <span className="text-sm text-slate-300">Language</span>
+              <div className="flex flex-wrap items-end gap-x-5 gap-y-3 border-t border-zinc-800/50 pt-5">
+                <label
+                  htmlFor="analysis-language"
+                  className="block min-w-0 space-y-2"
+                >
+                  <span className="block text-sm font-medium text-zinc-400">
+                    Language
+                  </span>
                   <select
+                    id="analysis-language"
                     value={language}
                     onChange={(e) => {
                       setLanguage(e.target.value as Language);
                       setSelectedHistoryId(null);
                     }}
-                    className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:border-emerald-600/60 focus:outline-none focus:ring-1 focus:ring-emerald-600/40"
+                    className="min-w-[10.5rem] cursor-pointer rounded-xl border border-zinc-700/70 bg-zinc-900/60 px-3 py-2.5 text-sm text-zinc-200 shadow-sm ring-1 ring-white/[0.03] transition hover:border-zinc-600 hover:bg-zinc-900 focus:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   >
                     {LANGUAGES.map((lang) => (
                       <option key={lang} value={lang}>
@@ -219,7 +265,7 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl bg-gradient-to-b from-amber-500 to-amber-600 px-6 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-950/40 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
                 >
                   {loading ? "Analyzing…" : "Analyze"}
                 </button>
@@ -229,7 +275,7 @@ export default function App() {
             {analyzeError && (
               <div
                 role="alert"
-                className="rounded-lg border border-rose-900/60 bg-rose-950/40 px-4 py-3 text-sm text-rose-200"
+                className="rounded-xl border border-rose-500/20 bg-rose-950/25 px-4 py-3 text-sm text-rose-100/95 ring-1 ring-rose-500/10"
               >
                 <p>{analyzeError.message}</p>
                 {analyzeError.suggestedLanguage != null && (
@@ -239,7 +285,7 @@ export default function App() {
                       setLanguage(analyzeError.suggestedLanguage!);
                       setAnalyzeError(null);
                     }}
-                    className="mt-3 rounded-md border border-emerald-700/60 bg-emerald-950/50 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:border-emerald-600 hover:bg-emerald-900/50"
+                    className="mt-3 rounded-lg border border-amber-600/40 bg-amber-950/35 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-500/50 hover:bg-amber-900/40"
                   >
                     Use {analyzeError.suggestedLanguage}
                   </button>
@@ -248,53 +294,59 @@ export default function App() {
             )}
 
             {result && (
-              <section className="space-y-8 border-t border-slate-800 pt-8">
-                <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
-                  Analysis
-                </h2>
+              <section className="space-y-6 rounded-2xl border border-zinc-800/60 bg-zinc-900/15 p-6 shadow-panel">
+                <div className="flex items-center gap-3">
+                  <span className="h-px w-8 bg-amber-500/45" aria-hidden />
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Analysis
+                  </h2>
+                </div>
 
-                <article className="space-y-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-500/90">
+                <article className="space-y-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-200/90">
                     Root cause
                   </h3>
-                  <p className="rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-3 text-slate-200">
+                  <p className="rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-950/35 via-zinc-900/40 to-zinc-950/60 px-6 py-5 text-lg font-medium leading-snug tracking-tight text-amber-50 shadow-[inset_0_1px_0_0_rgb(251_191_36_/_0.08)] ring-1 ring-amber-500/10 md:text-xl md:leading-snug">
                     {result.rootCause}
                   </p>
                 </article>
 
                 <article className="space-y-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-500/90">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-200/90">
                     Explanation
                   </h3>
-                  <p className="whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-3 text-slate-300 leading-relaxed">
+                  <p className="whitespace-pre-wrap rounded-xl border border-zinc-800/60 bg-zinc-900/35 px-4 py-3.5 text-[15px] leading-relaxed text-zinc-300 ring-1 ring-white/[0.03]">
                     {result.explanation}
                   </p>
                 </article>
 
-                <article className="space-y-4">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-500/90">
+                <article className="space-y-5">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-200/90">
                     Suggested fixes
                   </h3>
-                  <ul className="space-y-4">
+                  <ul className="flex flex-col gap-6">
                     {result.fixes.map((fix, i) => (
                       <li
                         key={i}
-                        className="rounded-lg border border-slate-800 bg-slate-900/40 p-4"
+                        className="rounded-2xl border border-zinc-700/55 bg-zinc-900/35 p-5 shadow-md ring-1 ring-white/[0.04] md:p-6"
                       >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <p className="flex-1 text-sm text-slate-200 leading-relaxed">
-                            {fix.description}
-                          </p>
+                        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-200/85">
+                            Fix #{i + 1}
+                          </span>
                           <CopyButton text={fix.description} />
                         </div>
-                        <div className="mt-3">
+                        <p className="text-sm leading-relaxed text-zinc-200">
+                          {fix.description}
+                        </p>
+                        <div className="mt-5">
                           <ConfidenceBar value={fix.confidence} />
                         </div>
                         {fix.suggestedCode != null &&
                           fix.suggestedCode.trim() !== "" && (
-                            <div className="mt-4 space-y-2">
+                            <div className="mt-5 space-y-2.5">
                               <div className="flex flex-wrap items-center justify-between gap-2">
-                                <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500/90">
                                   Suggested code
                                 </h4>
                                 <CopyButton
@@ -307,6 +359,7 @@ export default function App() {
                                 language={language}
                                 value={fix.suggestedCode}
                                 readOnly
+                                variant="embedded"
                                 height={`${Math.min(
                                   320,
                                   Math.max(
