@@ -11,6 +11,8 @@
   html {
     @apply m-0 bg-zinc-950 p-0;
     color-scheme: dark;
+    /* Reserve scrollbar width so layout doesn’t shift when content becomes scrollable */
+    scrollbar-gutter: stable;
   }
 
   body {

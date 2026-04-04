@@ -57,6 +57,8 @@ export interface CodeMirrorFieldProps {
   lineNumbers?: boolean;
   /** Darker inset style for code inside analysis cards */
   variant?: "default" | "embedded";
+  /** When mode is plaintext, tune colors/typography for stack traces */
+  plaintextTone?: "default" | "stackTrace";
   className?: string;
 }
 
@@ -70,8 +72,35 @@ export function CodeMirrorField({
   height,
   lineNumbers: showLineNumbers = true,
   variant = "default",
+  plaintextTone = "default",
   className = "",
 }: CodeMirrorFieldProps) {
+  const stackTraceTheme = useMemo(
+    () =>
+      EditorView.theme({
+        ".cm-scroller": {
+          fontFamily:
+            'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+          lineHeight: "1.7",
+          fontFeatureSettings: '"liga" 0',
+        },
+        ".cm-gutters": {
+          borderRight: "none",
+        },
+        ".cm-content": {
+          caretColor: "rgb(251 191 36)",
+          color: "#9cdcfe",
+        },
+        ".cm-activeLine": {
+          backgroundColor: "rgba(255, 255, 255, 0.04)",
+        },
+        ".cm-selectionBackground": {
+          backgroundColor: "rgba(245, 158, 11, 0.18)",
+        },
+      }),
+    [],
+  );
+
   const extensions = useMemo(() => {
     const ext: Extension[] = [
       keymap.of([indentWithTab]),
@@ -87,8 +116,19 @@ export function CodeMirrorField({
     if (mode === "code") {
       ext.push(languageExtension(language));
     }
+    if (mode === "plaintext" && plaintextTone === "stackTrace") {
+      ext.push(stackTraceTheme);
+    }
     return ext;
-  }, [mode, language, placeholderText, readOnly, showLineNumbers]);
+  }, [
+    mode,
+    language,
+    placeholderText,
+    readOnly,
+    showLineNumbers,
+    plaintextTone,
+    stackTraceTheme,
+  ]);
 
   const shell =
     variant === "embedded"

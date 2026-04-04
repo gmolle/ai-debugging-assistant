@@ -1,6 +1,11 @@
+import { useEffect, useState } from "react";
 import type { AnalysisSummary, Language } from "../types/analysis";
 import { LANGUAGES } from "../constants/languages";
 import { languageBadgeClass } from "../utils/languageBadge";
+import {
+  formatExactDateTime,
+  formatRelativeTime,
+} from "../utils/relativeTime";
 
 export type HistoryLanguageFilter = "all" | Language;
 
@@ -19,19 +24,6 @@ interface HistorySidebarProps {
   onRetry: () => void;
 }
 
-function formatWhen(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
-
 export function HistorySidebar({
   items,
   unfilteredTotal,
@@ -45,6 +37,12 @@ export function HistorySidebar({
   onDelete,
   onRetry,
 }: HistorySidebarProps) {
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const filteredEmpty =
     !loading &&
     !error &&
@@ -141,9 +139,13 @@ export function HistorySidebar({
                     className="w-full px-3 py-2.5 pr-10 text-left"
                   >
                     <div className="flex min-w-0 items-center gap-2 text-xs text-zinc-500">
-                      <span className="min-w-0 truncate">
-                        {formatWhen(item.createdAt)}
-                      </span>
+                      <time
+                        dateTime={item.createdAt}
+                        title={formatExactDateTime(item.createdAt)}
+                        className="min-w-0 cursor-help truncate border-b border-dotted border-zinc-600/70 underline-offset-2"
+                      >
+                        {formatRelativeTime(item.createdAt, nowTick)}
+                      </time>
                       <span
                         className={`ml-auto shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${languageBadgeClass(item.language)}`}
                       >
@@ -163,7 +165,7 @@ export function HistorySidebar({
                     type="button"
                     disabled={deleting}
                     title="Remove from history"
-                    aria-label={`Delete analysis from ${formatWhen(item.createdAt)}`}
+                    aria-label={`Delete analysis from ${formatExactDateTime(item.createdAt)}`}
                     onClick={() => onDelete(item.id)}
                     className="absolute right-1.5 top-1.5 z-10 rounded-md p-1.5 text-zinc-500 transition hover:bg-rose-950/55 hover:text-rose-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-40 [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100"
                   >

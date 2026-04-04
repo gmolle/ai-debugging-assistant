@@ -158,6 +158,24 @@ export default function App() {
     }
   }, []);
 
+  const onNewAnalysis = useCallback(() => {
+    setStackTrace("");
+    setCode("");
+    setResult(null);
+    setAnalyzeError(null);
+    setSelectedHistoryId(null);
+  }, []);
+
+  const hasInputToReset = useMemo(
+    () =>
+      stackTrace.trim() !== "" ||
+      code.trim() !== "" ||
+      result !== null ||
+      selectedHistoryId !== null ||
+      analyzeError !== null,
+    [stackTrace, code, result, selectedHistoryId, analyzeError],
+  );
+
   const onDeleteHistory = useCallback(
     async (id: string) => {
       setHistoryError(null);
@@ -189,7 +207,7 @@ export default function App() {
         ref={headerRef}
         className="sticky top-0 z-20 border-b border-zinc-800/50 bg-zinc-950 px-6 py-5 backdrop-blur-md"
       >
-        <div className="mx-auto flex max-w-6xl flex-col gap-1">
+        <div className="mx-auto flex w-full max-w-7xl min-[2100px]:max-w-[min(120rem,100%)] flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">
             AI Debugging Assistant
           </h1>
@@ -200,15 +218,25 @@ export default function App() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="mx-auto grid w-full max-w-7xl min-[2100px]:max-w-[min(120rem,calc(100%-3rem))] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_22rem] min-[2100px]:grid-cols-[minmax(0,1fr)_26rem] min-[2600px]:grid-cols-[minmax(0,1fr)_30rem]">
         <main className="min-w-0 px-6 py-10 xl:min-h-0 xl:pl-0 xl:pr-6">
           <form onSubmit={onSubmit} className="space-y-10">
             <section className="space-y-5 rounded-2xl border border-zinc-800/60 bg-zinc-900/20 p-6 shadow-panel">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-amber-500/45" aria-hidden />
-                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                  Input
-                </h2>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="h-px w-8 bg-amber-500/45" aria-hidden />
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Input
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={onNewAnalysis}
+                  disabled={!hasInputToReset || loading}
+                  className="rounded-xl border border-zinc-600/70 bg-zinc-900/50 px-3.5 py-2 text-xs font-semibold text-zinc-300 shadow-sm ring-1 ring-white/[0.04] transition hover:border-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  New analysis
+                </button>
               </div>
               <div className="grid gap-6 lg:grid-cols-2">
                 <label className="block min-h-0 space-y-2">
@@ -217,6 +245,7 @@ export default function App() {
                   </span>
                   <CodeMirrorField
                     mode="plaintext"
+                    plaintextTone="stackTrace"
                     value={stackTrace}
                     height="280px"
                     placeholderText="Paste the exception and stack frames…"
