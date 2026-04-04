@@ -160,15 +160,6 @@ export default function App() {
           <h1 className="text-xl font-semibold tracking-tight">
             AI Debugging Assistant
           </h1>
-          <p className="text-xs text-slate-500">
-            API:{" "}
-            <code className="rounded bg-slate-900 px-1.5 py-0.5 text-slate-400">
-              {apiBase ||
-                (import.meta.env.DEV
-                  ? "same origin /api → localhost:8080"
-                  : "http://localhost:8080")}
-            </code>
-          </p>
         </div>
       </header>
 
@@ -234,11 +225,6 @@ export default function App() {
                   {loading ? "Analyzing…" : "Analyze"}
                 </button>
               </div>
-              <p className="text-xs text-slate-500">
-                Both fields are required. Set{" "}
-                <code className="text-slate-400">OPENAI_API_KEY</code> on the
-                backend for live analysis.
-              </p>
             </section>
 
             {analyzeError && (

@@ -33,7 +33,6 @@ export interface AnalysisResult {
 
 export interface ErrorBody {
   error: string;
-  /** Present when the backend detected a different language than selected. */
   suggestedLanguage?: string | null;
 }
 
