@@ -232,6 +232,23 @@ export default function App() {
                         <div className="mt-3">
                           <ConfidenceBar value={fix.confidence} />
                         </div>
+                        {fix.suggestedCode != null &&
+                          fix.suggestedCode.trim() !== "" && (
+                            <div className="mt-4 space-y-2">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Suggested code
+                                </h4>
+                                <CopyButton
+                                  text={fix.suggestedCode}
+                                  label="Copy code"
+                                />
+                              </div>
+                              <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-950/80 p-3 font-mono text-xs leading-relaxed text-emerald-100/95">
+                                {fix.suggestedCode}
+                              </pre>
+                            </div>
+                          )}
                       </li>
                     ))}
                   </ul>

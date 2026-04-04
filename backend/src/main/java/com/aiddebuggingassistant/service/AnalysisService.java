@@ -29,6 +29,7 @@ public class AnalysisService {
 
     private static final int MAX_STACK_CHARS = 2000;
     private static final int MAX_CODE_CHARS = 4000;
+    private static final int MAX_SUGGESTED_CODE_CHARS = 12000;
 
     private static final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
@@ -175,15 +176,17 @@ public class AnalysisService {
                   "rootCause": "short cause",
                   "explanation": "clear explanation of why it happens",
                   "fixes": [
-                    { "description": "first suggested fix", "confidence": 0.0 },
-                    { "description": "second suggested fix", "confidence": 0.0 },
-                    { "description": "optional third fix", "confidence": 0.0 }
+                    { "description": "first suggested fix", "suggestedCode": "concrete code", "confidence": 0.0 },
+                    { "description": "second suggested fix", "suggestedCode": "concrete code", "confidence": 0.0 },
+                    { "description": "optional third fix", "suggestedCode": "concrete code", "confidence": 0.0 }
                   ]
                 }
 
                 Rules:
                 - fixes must contain exactly 2 or 3 objects
                 - each description must be non-empty
+                - each suggestedCode must be non-empty: actual source code in the SAME language as the user's "Language" field, grounded in their stack trace and code snippet. Prefer the smallest copy-pasteable change (e.g. corrected method, block, or file excerpt). Do not wrap the string in markdown code fences; escape any double quotes inside the JSON string.
+                - each suggestedCode should stay under about 8000 characters; omit unrelated boilerplate
                 - confidence must be a number between 0.0 and 1.0 (inclusive) indicating likelihood the fix addresses the root cause
                 - rank fixes: highest confidence first
                 """;
@@ -271,6 +274,12 @@ public class AnalysisService {
             if (f.description() == null || f.description().isBlank()) {
                 return "fix " + i + " description empty";
             }
+            if (f.suggestedCode() == null || f.suggestedCode().isBlank()) {
+                return "fix " + i + " suggestedCode empty";
+            }
+            if (f.suggestedCode().length() > MAX_SUGGESTED_CODE_CHARS) {
+                return "fix " + i + " suggestedCode too long (max " + MAX_SUGGESTED_CODE_CHARS + " chars)";
+            }
             if (Double.isNaN(f.confidence()) || Double.isInfinite(f.confidence())) {
                 return "fix " + i + " confidence not finite";
             }
@@ -287,7 +296,7 @@ public class AnalysisService {
             if (Double.compare(nc, c) != 0) {
                 clamped++;
             }
-            out.add(new FixSuggestion(f.description(), nc));
+            out.add(new FixSuggestion(f.description(), f.suggestedCode(), nc));
         }
         if (clamped > 0) {
             log.warn("Clamped {} confidence value(s) into [0.0, 1.0]", clamped);

@@ -8,6 +8,8 @@ export interface AnalyzeRequestBody {
 
 export interface FixSuggestion {
   description: string;
+  /** Concrete code in the analyzed language; may be missing on older saved analyses. */
+  suggestedCode?: string;
   confidence: number;
 }
 
