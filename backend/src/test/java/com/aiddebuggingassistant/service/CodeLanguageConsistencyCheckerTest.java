@@ -1,8 +1,7 @@
 package com.aiddebuggingassistant.service;
 
+import com.aiddebuggingassistant.exception.LanguageMismatchException;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -31,11 +30,11 @@ class CodeLanguageConsistencyCheckerTest {
                                         "",
                                         "import java.util.List;\npublic class A { public static void main(String[] a) {} }",
                                         "C#"))
-                .isInstanceOf(ResponseStatusException.class)
+                .isInstanceOf(LanguageMismatchException.class)
                 .satisfies(
                         ex ->
-                                assertThat(((ResponseStatusException) ex).getStatusCode())
-                                        .isEqualTo(HttpStatus.BAD_REQUEST));
+                                assertThat(((LanguageMismatchException) ex).getSuggestedLanguage())
+                                        .isEqualTo("Java"));
     }
 
     @Test
@@ -44,7 +43,7 @@ class CodeLanguageConsistencyCheckerTest {
                         () ->
                                 checker.assertConsistentWithSelection(
                                         "at demo.Demo.main(Demo.java:12)", "x", "Ruby"))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(LanguageMismatchException.class);
     }
 
     @Test

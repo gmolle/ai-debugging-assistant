@@ -1,6 +1,16 @@
 import { analyzeUrl } from "./client";
 import type { AnalysisResult, AnalyzeRequestBody, ErrorBody } from "../types/analysis";
 
+export class AnalysisRequestError extends Error {
+  readonly suggestedLanguage?: string;
+
+  constructor(message: string, options?: { suggestedLanguage?: string }) {
+    super(message);
+    this.name = "AnalysisRequestError";
+    this.suggestedLanguage = options?.suggestedLanguage;
+  }
+}
+
 export async function requestAnalysis(
   body: AnalyzeRequestBody
 ): Promise<AnalysisResult> {
@@ -20,7 +30,12 @@ export async function requestAnalysis(
 
   if (!res.ok) {
     const err = data as ErrorBody | null;
-    throw new Error(err?.error ?? `Request failed (${res.status})`);
+    const msg = err?.error ?? `Request failed (${res.status})`;
+    const sug = err?.suggestedLanguage;
+    throw new AnalysisRequestError(msg, {
+      suggestedLanguage:
+        typeof sug === "string" && sug.length > 0 ? sug : undefined,
+    });
   }
 
   return data as AnalysisResult;

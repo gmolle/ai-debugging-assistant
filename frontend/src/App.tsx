@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { requestAnalysis } from "./api/analyze";
+import { AnalysisRequestError, requestAnalysis } from "./api/analyze";
 import { apiBase } from "./api/client";
 import { fetchAnalysisDetail, fetchRecentAnalyses } from "./api/history";
 import { CodeMirrorField } from "./components/CodeMirrorField";
@@ -28,7 +28,10 @@ export default function App() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState<Language>("Java");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [analyzeError, setAnalyzeError] = useState<{
+    message: string;
+    suggestedLanguage?: Language;
+  } | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
   const [historyItems, setHistoryItems] = useState<AnalysisSummary[]>([]);
@@ -66,7 +69,7 @@ export default function App() {
       if (!canSubmit) return;
 
       setLoading(true);
-      setError(null);
+      setAnalyzeError(null);
       setResult(null);
       setSelectedHistoryId(null);
 
@@ -79,7 +82,19 @@ export default function App() {
         setResult(data);
         await loadHistory();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
+        if (err instanceof AnalysisRequestError) {
+          const sug = err.suggestedLanguage;
+          const lang =
+            sug != null && (LANGUAGES as readonly string[]).includes(sug)
+              ? (sug as Language)
+              : undefined;
+          setAnalyzeError({ message: err.message, suggestedLanguage: lang });
+        } else {
+          setAnalyzeError({
+            message:
+              err instanceof Error ? err.message : "Something went wrong.",
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -90,7 +105,7 @@ export default function App() {
   const onSelectHistory = useCallback(async (id: string) => {
     setHistoryError(null);
     setSelectedHistoryId(id);
-    setError(null);
+    setAnalyzeError(null);
     try {
       const detail = await fetchAnalysisDetail(id);
       setStackTrace(detail.stackTrace);
@@ -193,12 +208,24 @@ export default function App() {
               </p>
             </section>
 
-            {error && (
+            {analyzeError && (
               <div
                 role="alert"
                 className="rounded-lg border border-rose-900/60 bg-rose-950/40 px-4 py-3 text-sm text-rose-200"
               >
-                {error}
+                <p>{analyzeError.message}</p>
+                {analyzeError.suggestedLanguage != null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLanguage(analyzeError.suggestedLanguage!);
+                      setAnalyzeError(null);
+                    }}
+                    className="mt-3 rounded-md border border-emerald-700/60 bg-emerald-950/50 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:border-emerald-600 hover:bg-emerald-900/50"
+                  >
+                    Use {analyzeError.suggestedLanguage}
+                  </button>
+                )}
               </div>
             )}
 

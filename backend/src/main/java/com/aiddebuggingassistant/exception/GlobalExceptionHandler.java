@@ -1,6 +1,7 @@
 package com.aiddebuggingassistant.exception;
 
 import com.aiddebuggingassistant.dto.ErrorResponse;
+import com.aiddebuggingassistant.exception.LanguageMismatchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleNoResource(NoResourceFoundException ex) {
         log.debug("No resource: {}", ex.getResourcePath());
         return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(LanguageMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleLanguageMismatch(LanguageMismatchException ex) {
+        log.debug("Language mismatch: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage(), ex.getSuggestedLanguage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

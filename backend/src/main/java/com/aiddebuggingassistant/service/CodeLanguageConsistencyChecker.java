@@ -1,8 +1,7 @@
 package com.aiddebuggingassistant.service;
 
-import org.springframework.http.HttpStatus;
+import com.aiddebuggingassistant.exception.LanguageMismatchException;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -108,8 +107,8 @@ public class CodeLanguageConsistencyChecker {
         if (topScore - claimedScore < MIN_LEAD_OVER_CLAIMED) {
             return;
         }
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
+        throw new LanguageMismatchException(
+                top,
                 "This input looks like "
                         + top
                         + ", but the language is set to "
