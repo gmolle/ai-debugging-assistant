@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { requestAnalysis } from "./api/analyze";
 import { apiBase } from "./api/client";
 import { fetchAnalysisDetail, fetchRecentAnalyses } from "./api/history";
+import { CodeMirrorField } from "./components/CodeMirrorField";
 import { ConfidenceBar } from "./components/ConfidenceBar";
 import { CopyButton } from "./components/CopyButton";
 import { HistorySidebar } from "./components/HistorySidebar";
@@ -118,32 +119,31 @@ export default function App() {
                 Input
               </h2>
               <div className="grid gap-6 lg:grid-cols-2">
-                <label className="block space-y-2">
+                <label className="block min-h-0 space-y-2">
                   <span className="text-sm text-slate-300">Stack trace</span>
-                  <textarea
+                  <CodeMirrorField
+                    mode="plaintext"
                     value={stackTrace}
-                    onChange={(e) => {
-                      setStackTrace(e.target.value);
+                    height="280px"
+                    placeholderText="Paste the exception and stack frames…"
+                    onChange={(v) => {
+                      setStackTrace(v);
                       setSelectedHistoryId(null);
                     }}
-                    rows={10}
-                    placeholder="Paste the exception and stack frames…"
-                    className="w-full resize-y rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2.5 font-mono text-sm leading-relaxed text-slate-200 placeholder:text-slate-600 focus:border-emerald-600/60 focus:outline-none focus:ring-1 focus:ring-emerald-600/40"
-                    spellCheck={false}
                   />
                 </label>
-                <label className="block space-y-2">
+                <label className="block min-h-0 space-y-2">
                   <span className="text-sm text-slate-300">Code snippet</span>
-                  <textarea
+                  <CodeMirrorField
+                    mode="code"
+                    language={language}
                     value={code}
-                    onChange={(e) => {
-                      setCode(e.target.value);
+                    height="280px"
+                    placeholderText="Paste the relevant code…"
+                    onChange={(v) => {
+                      setCode(v);
                       setSelectedHistoryId(null);
                     }}
-                    rows={10}
-                    placeholder="Paste the relevant code…"
-                    className="w-full resize-y rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2.5 font-mono text-sm leading-relaxed text-slate-200 placeholder:text-slate-600 focus:border-emerald-600/60 focus:outline-none focus:ring-1 focus:ring-emerald-600/40"
-                    spellCheck={false}
                   />
                 </label>
               </div>
@@ -244,9 +244,20 @@ export default function App() {
                                   label="Copy code"
                                 />
                               </div>
-                              <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-950/80 p-3 font-mono text-xs leading-relaxed text-emerald-100/95">
-                                {fix.suggestedCode}
-                              </pre>
+                              <CodeMirrorField
+                                mode="code"
+                                language={language}
+                                value={fix.suggestedCode}
+                                readOnly
+                                height={`${Math.min(
+                                  320,
+                                  Math.max(
+                                    96,
+                                    20 +
+                                      fix.suggestedCode.split("\n").length * 18
+                                  )
+                                )}px`}
+                              />
                             </div>
                           )}
                       </li>
