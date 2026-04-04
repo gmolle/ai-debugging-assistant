@@ -4,12 +4,16 @@ import com.aiddebuggingassistant.dto.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,9 +35,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        log.warn("Validation failed: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(GENERIC_MESSAGE));
+        String detail =
+                ex.getBindingResult().getAllErrors().stream()
+                        .map(ObjectError::getDefaultMessage)
+                        .filter(m -> m != null && !m.isBlank())
+                        .collect(Collectors.joining(" "));
+        if (detail.isBlank()) {
+            detail = GENERIC_MESSAGE;
+        }
+        log.warn("Validation failed: {}", detail);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(detail));
     }
 
     @ExceptionHandler(AnalysisFailedException.class)
@@ -44,13 +55,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Void> handleResponseStatus(ResponseStatusException ex) {
-        if (ex.getStatusCode().is4xxClientError()) {
-            log.debug("Client error {}: {}", ex.getStatusCode().value(), ex.getReason());
-        } else {
-            log.warn("Status {}: {}", ex.getStatusCode().value(), ex.getReason());
+    public ResponseEntity<?> handleResponseStatus(ResponseStatusException ex) {
+        HttpStatusCode status = ex.getStatusCode();
+        String reason = ex.getReason();
+        if (status.is4xxClientError()) {
+            if (reason != null && !reason.isBlank()) {
+                log.debug("Client error {}: {}", status.value(), reason);
+                return ResponseEntity.status(status).body(new ErrorResponse(reason));
+            }
+            log.debug("Client error {} (no message)", status.value());
+            return ResponseEntity.status(status).build();
         }
-        return ResponseEntity.status(ex.getStatusCode()).build();
+        log.warn("Status {}: {}", status.value(), reason);
+        return ResponseEntity.status(status).build();
     }
 
     @ExceptionHandler(Exception.class)

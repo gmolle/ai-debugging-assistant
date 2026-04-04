@@ -38,18 +38,21 @@ public class AnalysisService {
     private final OpenAiAnalysisProperties openAiProperties;
     private final AnalysisProperties analysisProperties;
     private final AnalysisRepository analysisRepository;
+    private final CodeLanguageConsistencyChecker languageConsistencyChecker;
 
     public AnalysisService(
             WebClient openAiWebClient,
             ObjectMapper objectMapper,
             OpenAiAnalysisProperties openAiProperties,
             AnalysisProperties analysisProperties,
-            AnalysisRepository analysisRepository) {
+            AnalysisRepository analysisRepository,
+            CodeLanguageConsistencyChecker languageConsistencyChecker) {
         this.openAiWebClient = openAiWebClient;
         this.objectMapper = objectMapper;
         this.openAiProperties = openAiProperties;
         this.analysisProperties = analysisProperties;
         this.analysisRepository = analysisRepository;
+        this.languageConsistencyChecker = languageConsistencyChecker;
     }
 
     @Transactional
@@ -67,6 +70,8 @@ public class AnalysisService {
                 language,
                 stack.length(),
                 code.length());
+
+        languageConsistencyChecker.assertConsistentWithSelection(stack, code, language);
 
         String systemPrompt = buildSystemPrompt();
         List<String> repairHints = new ArrayList<>();

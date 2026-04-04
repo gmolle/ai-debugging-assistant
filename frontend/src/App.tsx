@@ -8,7 +8,17 @@ import { CopyButton } from "./components/CopyButton";
 import { HistorySidebar } from "./components/HistorySidebar";
 import type { AnalysisResult, AnalysisSummary, Language } from "./types/analysis";
 
-const LANGUAGES: Language[] = ["Java", "JavaScript", "Python"];
+const LANGUAGES: Language[] = [
+  "C#",
+  "C++",
+  "Go",
+  "Java",
+  "JavaScript",
+  "Python",
+  "Ruby",
+  "Rust",
+  "TypeScript",
+];
 
 export default function App() {
   const [stackTrace, setStackTrace] = useState("");

@@ -1,4 +1,13 @@
-export type Language = "Java" | "JavaScript" | "Python";
+export type Language =
+  | "C#"
+  | "C++"
+  | "Go"
+  | "Java"
+  | "JavaScript"
+  | "Python"
+  | "Ruby"
+  | "Rust"
+  | "TypeScript";
 
 export interface AnalyzeRequestBody {
   stackTrace: string;
