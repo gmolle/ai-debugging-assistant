@@ -73,7 +73,15 @@ npm run verify:integration
 2. Set `OPENAI_API_KEY` for the backend
 3. Backend: `cd backend && ./mvnw spring-boot:run` (Windows: `mvnw.cmd spring-boot:run`)
 4. Frontend: `npm run dev -w frontend` from repo root, or `cd frontend && npm run dev`
-5. Create `frontend/.env` with `VITE_API_BASE_URL=http://localhost:8080` (or your API origin) if you need a non-default API URL
+5. Optional `frontend/.env`: set `VITE_API_BASE_URL` to your API origin when the UI is **not** served by Vite dev (e.g. deployed). During `npm run dev`, if that variable is unset or blank, the UI calls **`/api/...` on the Vite origin** and Vite **proxies** those requests to `http://localhost:8080`, which avoids accidental 404s from hitting the wrong host.
+
+## API
+
+- **`POST /api/analyze`** — JSON body: stack trace, optional code snippet, language. Returns structured fixes and confidence; when `app.analysis.persist-results` is `true`, the row is stored after a successful model response.
+- **`GET /api/analyses/recent?limit=`** — Recent saved analyses (newest first). Default limit **20**, maximum **50**. Each item includes `id`, `createdAt`, `language`, and short preview fields derived from the stored result.
+- **`GET /api/analyses/{id}`** — Full detail for one saved analysis: stack trace, code, language, and the same analysis payload shape as `POST /api/analyze`.
+
+With **`npm run dev:offline`**, the app uses in-memory H2 and no Flyway migration matching production; the analyses table may be missing or data is ephemeral, so **history can be empty or reset** on restart. Use **`npm run dev`** with Postgres for persistent history like production-style local dev.
 
 ## Configuration
 

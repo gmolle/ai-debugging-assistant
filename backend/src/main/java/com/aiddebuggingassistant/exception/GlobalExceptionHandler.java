@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
@@ -40,6 +41,16 @@ public class GlobalExceptionHandler {
         log.warn("Analysis failed: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(new ErrorResponse(GENERIC_MESSAGE));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Void> handleResponseStatus(ResponseStatusException ex) {
+        if (ex.getStatusCode().is4xxClientError()) {
+            log.debug("Client error {}: {}", ex.getStatusCode().value(), ex.getReason());
+        } else {
+            log.warn("Status {}: {}", ex.getStatusCode().value(), ex.getReason());
+        }
+        return ResponseEntity.status(ex.getStatusCode()).build();
     }
 
     @ExceptionHandler(Exception.class)

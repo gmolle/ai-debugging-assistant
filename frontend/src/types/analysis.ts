@@ -20,3 +20,20 @@ export interface AnalysisResult {
 export interface ErrorBody {
   error: string;
 }
+
+export interface AnalysisSummary {
+  id: string;
+  createdAt: string;
+  language: string;
+  rootCauseSummary: string;
+  stackHeadline: string;
+}
+
+export interface AnalysisDetail {
+  id: string;
+  createdAt: string;
+  language: string;
+  stackTrace: string;
+  code: string;
+  analysis: AnalysisResult;
+}
