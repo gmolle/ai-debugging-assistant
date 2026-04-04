@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { AnalysisRequestError, requestAnalysis } from "./api/analyze";
-import { apiBase } from "./api/client";
 import {
   deleteAnalysis,
   fetchAnalysisDetail,
