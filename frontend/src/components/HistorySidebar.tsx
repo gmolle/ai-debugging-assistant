@@ -1,4 +1,5 @@
 import type { AnalysisSummary } from "../types/analysis";
+import { languageBadgeClass } from "../utils/languageBadge";
 
 interface HistorySidebarProps {
   items: AnalysisSummary[];
@@ -80,7 +81,9 @@ export function HistorySidebar({
                 >
                   <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
                     <span>{formatWhen(item.createdAt)}</span>
-                    <span className="rounded bg-slate-800 px-1.5 py-0.5 font-medium text-slate-400">
+                    <span
+                      className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${languageBadgeClass(item.language)}`}
+                    >
                       {item.language}
                     </span>
                   </div>
