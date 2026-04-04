@@ -14,8 +14,12 @@ spring:
 
 app:
   openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: gpt-4o-mini
     max-attempts: 2
     response-timeout: 10s
+  analysis:
+    persist-results: true
   cors:
     allowed-origins: http://localhost:5173
 

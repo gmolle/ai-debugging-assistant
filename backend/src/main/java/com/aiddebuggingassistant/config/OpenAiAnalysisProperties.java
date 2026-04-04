@@ -17,6 +17,16 @@ public class OpenAiAnalysisProperties {
      */
     private Duration responseTimeout = Duration.ofSeconds(10);
 
+    /**
+     * API key from environment (e.g. OPENAI_API_KEY); never log this value.
+     */
+    private String apiKey = "";
+
+    /**
+     * Chat Completions model id.
+     */
+    private String model = "gpt-4o-mini";
+
     public int getMaxAttempts() {
         return maxAttempts;
     }
@@ -31,5 +41,21 @@ public class OpenAiAnalysisProperties {
 
     public void setResponseTimeout(Duration responseTimeout) {
         this.responseTimeout = responseTimeout;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

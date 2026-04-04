@@ -35,6 +35,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(GENERIC_MESSAGE));
     }
 
+    @ExceptionHandler(AnalysisFailedException.class)
+    public ResponseEntity<ErrorResponse> handleAnalysisFailed(AnalysisFailedException ex) {
+        log.warn("Analysis failed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(new ErrorResponse(GENERIC_MESSAGE));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         log.error("Unhandled error", ex);

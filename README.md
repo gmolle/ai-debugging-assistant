@@ -77,7 +77,12 @@ npm run verify:integration
 
 ## Configuration
 
-OpenAI timeout and retry cap live in `backend/src/main/resources/application.yml` under `app.openai` (`response-timeout`, `max-attempts`).
+Set **`OPENAI_API_KEY`** in the environment before calling **`POST /api/analyze`**.
+
+In `backend/src/main/resources/application.yml`:
+
+- `app.openai`: `api-key` (from env), `model` (default `gpt-4o-mini`), `max-attempts`, `response-timeout`
+- `app.analysis.persist-results`: save successful analyses to Postgres (default `true`; tests use `false`)
 
 ## Confidence scores
 
