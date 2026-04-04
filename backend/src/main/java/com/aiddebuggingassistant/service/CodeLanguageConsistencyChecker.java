@@ -31,7 +31,9 @@ public class CodeLanguageConsistencyChecker {
     private static final int MIN_LEAD_OVER_RUNNER_UP = 4;
 
     private static final Pattern FILE_EXT_LINE =
-            Pattern.compile("\\.(java|cs|cpp|cc|cxx|go|rs|rb|py|js|mjs|cjs|ts|tsx|jsx)\\s*:\\d+", Pattern.CASE_INSENSITIVE);
+            Pattern.compile(
+                    "\\.(java|cs|cpp|cc|cxx|go|rs|rb|py|js|mjs|cjs|ts|tsx|jsx|kt|kts|swift|php)\\s*:\\d+",
+                    Pattern.CASE_INSENSITIVE);
 
     private record Signal(String language, Pattern pattern, int weight) {}
 
@@ -64,7 +66,20 @@ public class CodeLanguageConsistencyChecker {
                     new Signal("TypeScript", Pattern.compile("(?m)^\\s*interface\\s+\\w+"), 8),
                     new Signal("TypeScript", Pattern.compile("(?m)^\\s*type\\s+\\w+\\s*="), 6),
                     new Signal("TypeScript", Pattern.compile("\\bas\\s+const\\b"), 3),
-                    new Signal("TypeScript", Pattern.compile(":\\s*(string|number|boolean|void|unknown|never)\\b"), 4));
+                    new Signal("TypeScript", Pattern.compile(":\\s*(string|number|boolean|void|unknown|never)\\b"), 4),
+                    new Signal("Kotlin", Pattern.compile("\\bfun\\s+main\\s*\\("), 10),
+                    new Signal("Kotlin", Pattern.compile("\\bdata\\s+class\\s+\\w+"), 7),
+                    new Signal("Kotlin", Pattern.compile("\\bsuspend\\s+fun\\b"), 8),
+                    new Signal("Kotlin", Pattern.compile("\\bprintln\\s*\\("), 5),
+                    new Signal("Kotlin", Pattern.compile("\\bval\\s+\\w+\\s*="), 4),
+                    new Signal("PHP", Pattern.compile("<\\?php"), 12),
+                    new Signal("PHP", Pattern.compile("namespace\\s+[\\\\\\w]+\\s*;"), 6),
+                    new Signal("PHP", Pattern.compile("\\$this\\s*->"), 7),
+                    new Signal("PHP", Pattern.compile("\\$\\w+\\s*->\\s*\\w+"), 5),
+                    new Signal("Swift", Pattern.compile("import\\s+(Swift|UIKit|Foundation|SwiftUI)\\b"), 10),
+                    new Signal("Swift", Pattern.compile("\\bguard\\s+let\\b"), 8),
+                    new Signal("Swift", Pattern.compile("\\bfunc\\s+\\w+\\s*\\([^)]*\\)\\s*->"), 8),
+                    new Signal("Swift", Pattern.compile("@main\\b"), 6));
 
     public void assertConsistentWithSelection(String stackTrace, String code, String selectedLanguage) {
         Map<String, Integer> scores = score(stackTrace, code);
@@ -138,6 +153,9 @@ public class CodeLanguageConsistencyChecker {
                 case "js", "mjs", "cjs" -> scores.merge("JavaScript", FILE_EXT_SCORE, Integer::sum);
                 case "ts", "tsx" -> scores.merge("TypeScript", FILE_EXT_SCORE, Integer::sum);
                 case "jsx" -> scores.merge("JavaScript", FILE_EXT_SCORE, Integer::sum);
+                case "kt", "kts" -> scores.merge("Kotlin", FILE_EXT_SCORE, Integer::sum);
+                case "swift" -> scores.merge("Swift", FILE_EXT_SCORE, Integer::sum);
+                case "php" -> scores.merge("PHP", FILE_EXT_SCORE, Integer::sum);
                 default -> {
                     // ignore
                 }

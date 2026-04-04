@@ -4,11 +4,13 @@ import { cpp } from "@codemirror/lang-cpp";
 import { go } from "@codemirror/lang-go";
 import { java } from "@codemirror/lang-java";
 import { javascript } from "@codemirror/lang-javascript";
+import { php } from "@codemirror/lang-php";
 import { python } from "@codemirror/lang-python";
 import { rust } from "@codemirror/lang-rust";
 import { StreamLanguage } from "@codemirror/language";
-import { csharp } from "@codemirror/legacy-modes/mode/clike";
+import { csharp, kotlin } from "@codemirror/legacy-modes/mode/clike";
 import { ruby } from "@codemirror/legacy-modes/mode/ruby";
+import { swift } from "@codemirror/legacy-modes/mode/swift";
 import { indentWithTab } from "@codemirror/commands";
 import type { Extension } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
@@ -27,12 +29,18 @@ function languageExtension(lang: Language): Extension {
       return java();
     case "JavaScript":
       return javascript({ jsx: true, typescript: false });
+    case "Kotlin":
+      return StreamLanguage.define(kotlin);
+    case "PHP":
+      return php({ plain: true });
     case "Python":
       return python();
     case "Ruby":
       return StreamLanguage.define(ruby);
     case "Rust":
       return rust();
+    case "Swift":
+      return StreamLanguage.define(swift);
     case "TypeScript":
       return javascript({ jsx: true, typescript: true });
   }

@@ -9,8 +9,8 @@ public record AnalyzeRequest(
         @NotBlank
         @Pattern(
                 regexp =
-                        "C#|C\\+\\+|Go|Java|JavaScript|Python|Ruby|Rust|TypeScript",
+                        "C#|C\\+\\+|Go|Java|JavaScript|Kotlin|PHP|Python|Ruby|Rust|Swift|TypeScript",
                 message =
-                        "language must be one of: C#, C++, Go, Java, JavaScript, Python, Ruby, Rust, TypeScript")
+                        "language must be one of: C#, C++, Go, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Swift, TypeScript")
         String language
 ) {}

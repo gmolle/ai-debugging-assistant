@@ -7,9 +7,12 @@ const LANGUAGE_BADGE: Record<Language, string> = {
   Go: "border-cyan-500/35 bg-cyan-950/45 text-cyan-200/95",
   Java: "border-amber-500/35 bg-amber-950/45 text-amber-200/95",
   JavaScript: "border-yellow-500/35 bg-yellow-950/50 text-yellow-200/95",
+  Kotlin: "border-fuchsia-500/35 bg-fuchsia-950/45 text-fuchsia-200/95",
+  PHP: "border-teal-500/35 bg-teal-950/45 text-teal-200/95",
   Python: "border-emerald-500/35 bg-emerald-950/40 text-emerald-200/95",
   Ruby: "border-rose-500/35 bg-rose-950/45 text-rose-200/95",
   Rust: "border-orange-500/35 bg-orange-950/45 text-orange-200/95",
+  Swift: "border-pink-500/35 bg-pink-950/40 text-pink-200/95",
   TypeScript: "border-sky-500/35 bg-sky-950/45 text-sky-200/95",
 };
 

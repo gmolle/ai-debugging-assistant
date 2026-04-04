@@ -14,9 +14,12 @@ const LANGUAGES: Language[] = [
   "Go",
   "Java",
   "JavaScript",
+  "Kotlin",
+  "PHP",
   "Python",
   "Ruby",
   "Rust",
+  "Swift",
   "TypeScript",
 ];
 

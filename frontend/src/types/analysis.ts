@@ -4,9 +4,12 @@ export type Language =
   | "Go"
   | "Java"
   | "JavaScript"
+  | "Kotlin"
+  | "PHP"
   | "Python"
   | "Ruby"
   | "Rust"
+  | "Swift"
   | "TypeScript";
 
 export interface AnalyzeRequestBody {
