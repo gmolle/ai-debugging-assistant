@@ -1,8 +1,15 @@
-import type { AnalysisSummary } from "../types/analysis";
+import type { AnalysisSummary, Language } from "../types/analysis";
+import { LANGUAGES } from "../constants/languages";
 import { languageBadgeClass } from "../utils/languageBadge";
+
+export type HistoryLanguageFilter = "all" | Language;
 
 interface HistorySidebarProps {
   items: AnalysisSummary[];
+  /** Total count before language filter (for empty states). */
+  unfilteredTotal: number;
+  languageFilter: HistoryLanguageFilter;
+  onLanguageFilterChange: (value: HistoryLanguageFilter) => void;
   loading: boolean;
   error: string | null;
   selectedId: string | null;
@@ -27,6 +34,9 @@ function formatWhen(iso: string): string {
 
 export function HistorySidebar({
   items,
+  unfilteredTotal,
+  languageFilter,
+  onLanguageFilterChange,
   loading,
   error,
   selectedId,
@@ -35,15 +45,19 @@ export function HistorySidebar({
   onDelete,
   onRetry,
 }: HistorySidebarProps) {
+  const filteredEmpty =
+    !loading &&
+    !error &&
+    items.length === 0 &&
+    unfilteredTotal > 0 &&
+    languageFilter !== "all";
+
   return (
-    <aside className="border-t border-zinc-800/60 bg-zinc-950/30 xl:sticky xl:top-[var(--app-header-h)] xl:max-h-[calc(100dvh-var(--app-header-h))] xl:self-start xl:overflow-y-auto xl:w-80 xl:shrink-0 xl:border-l xl:border-t-0 xl:bg-gradient-to-l xl:from-zinc-900/25 xl:to-transparent">
-      <div className="flex flex-col gap-4 p-5">
+    <aside className="border-t border-zinc-800/60 bg-zinc-950/30 px-6 pb-10 pt-8 xl:sticky xl:top-[var(--app-header-h)] xl:z-10 xl:flex xl:h-[calc(100dvh-var(--app-header-h))] xl:w-full xl:flex-col xl:overflow-hidden xl:self-start xl:border-x xl:border-t-0 xl:border-zinc-800/60 xl:px-0 xl:pb-0 xl:pt-0">
+      <div className="shrink-0 space-y-4 border-b border-zinc-800/50 bg-zinc-950/95 px-5 pb-4 pt-5 backdrop-blur-md xl:bg-zinc-950/90">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span
-              className="h-px w-5 bg-amber-500/40"
-              aria-hidden
-            />
+            <span className="h-px w-5 bg-amber-500/40" aria-hidden />
             <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
               Recent
             </h2>
@@ -58,20 +72,53 @@ export function HistorySidebar({
           </button>
         </div>
 
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+            Language
+          </span>
+          <select
+            value={languageFilter}
+            onChange={(e) => {
+              const v = e.target.value;
+              onLanguageFilterChange(v === "all" ? "all" : (v as Language));
+            }}
+            className="w-full cursor-pointer rounded-lg border border-zinc-700/70 bg-zinc-900/60 px-2.5 py-2 text-xs text-zinc-200 shadow-sm ring-1 ring-white/[0.03] transition hover:border-zinc-600 hover:bg-zinc-900 focus:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+            aria-label="Filter history by language"
+          >
+            <option value="all">All languages</option>
+            {LANGUAGES.map((lang) => (
+              <option key={lang} value={lang}>
+                {lang}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-5 pt-4">
         {error && (
           <p className="text-xs text-rose-400" role="alert">
             {error}
           </p>
         )}
 
-        {loading && items.length === 0 && (
+        {loading && unfilteredTotal === 0 && (
           <p className="text-sm text-zinc-500">Loading…</p>
         )}
 
-        {!loading && !error && items.length === 0 && (
+        {!loading && !error && unfilteredTotal === 0 && (
           <p className="text-sm text-zinc-500">
             Saved analyses appear here after a successful run (Postgres +
             <code className="mx-1 text-zinc-400">persist-results</code>).
+          </p>
+        )}
+
+        {filteredEmpty && (
+          <p className="text-sm text-zinc-500">
+            No saved analyses for{" "}
+            <span className="font-medium text-zinc-400">{languageFilter}</span>.
+            Choose <span className="text-zinc-400">All languages</span> to see
+            everything.
           </p>
         )}
 

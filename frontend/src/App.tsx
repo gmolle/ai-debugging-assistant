@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -15,27 +16,16 @@ import {
 import { CodeMirrorField } from "./components/CodeMirrorField";
 import { ConfidenceBar } from "./components/ConfidenceBar";
 import { CopyButton } from "./components/CopyButton";
-import { HistorySidebar } from "./components/HistorySidebar";
+import {
+  HistorySidebar,
+  type HistoryLanguageFilter,
+} from "./components/HistorySidebar";
+import { LANGUAGES } from "./constants/languages";
 import type {
   AnalysisResult,
   AnalysisSummary,
   Language,
 } from "./types/analysis";
-
-const LANGUAGES: Language[] = [
-  "C#",
-  "C++",
-  "Go",
-  "Java",
-  "JavaScript",
-  "Kotlin",
-  "PHP",
-  "Python",
-  "Ruby",
-  "Rust",
-  "Swift",
-  "TypeScript",
-];
 
 export default function App() {
   const shellRef = useRef<HTMLDivElement>(null);
@@ -60,6 +50,13 @@ export default function App() {
   const [deletingHistoryId, setDeletingHistoryId] = useState<string | null>(
     null,
   );
+  const [historyLanguageFilter, setHistoryLanguageFilter] =
+    useState<HistoryLanguageFilter>("all");
+
+  const filteredHistoryItems = useMemo(() => {
+    if (historyLanguageFilter === "all") return historyItems;
+    return historyItems.filter((i) => i.language === historyLanguageFilter);
+  }, [historyItems, historyLanguageFilter]);
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -92,6 +89,14 @@ export default function App() {
     ro.observe(header);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (selectedHistoryId == null) return;
+    const stillVisible = filteredHistoryItems.some(
+      (i) => i.id === selectedHistoryId,
+    );
+    if (!stillVisible) setSelectedHistoryId(null);
+  }, [selectedHistoryId, filteredHistoryItems]);
 
   const canSubmit =
     stackTrace.trim().length > 0 && code.trim().length > 0 && !loading;
@@ -195,8 +200,8 @@ export default function App() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl flex-col xl:flex-row">
-        <main className="min-w-0 flex-1 pr-6 py-10">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <main className="min-w-0 px-6 py-10 xl:min-h-0 xl:pl-0 xl:pr-6">
           <form onSubmit={onSubmit} className="space-y-10">
             <section className="space-y-5 rounded-2xl border border-zinc-800/60 bg-zinc-900/20 p-6 shadow-panel">
               <div className="flex items-center gap-3">
@@ -381,7 +386,10 @@ export default function App() {
         </main>
 
         <HistorySidebar
-          items={historyItems}
+          items={filteredHistoryItems}
+          unfilteredTotal={historyItems.length}
+          languageFilter={historyLanguageFilter}
+          onLanguageFilterChange={setHistoryLanguageFilter}
           loading={historyLoading}
           error={historyError}
           selectedId={selectedHistoryId}
