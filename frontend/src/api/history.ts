@@ -23,3 +23,15 @@ export async function fetchAnalysisDetail(id: string): Promise<AnalysisDetail> {
   }
   return res.json() as Promise<AnalysisDetail>;
 }
+
+export async function deleteAnalysis(id: string): Promise<void> {
+  const res = await fetch(`${apiUrl("/analyses/")}${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  if (res.status === 404) {
+    throw new Error("That analysis was already removed.");
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to delete (${res.status})`);
+  }
+}

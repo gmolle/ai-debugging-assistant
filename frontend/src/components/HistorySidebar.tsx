@@ -6,7 +6,9 @@ interface HistorySidebarProps {
   loading: boolean;
   error: string | null;
   selectedId: string | null;
+  deletingId: string | null;
   onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
   onRetry: () => void;
 }
 
@@ -28,7 +30,9 @@ export function HistorySidebar({
   loading,
   error,
   selectedId,
+  deletingId,
   onSelect,
+  onDelete,
   onRetry,
 }: HistorySidebarProps) {
   return (
@@ -68,34 +72,72 @@ export function HistorySidebar({
         <ul className="flex flex-col gap-2">
           {items.map((item) => {
             const active = item.id === selectedId;
+            const deleting = item.id === deletingId;
             return (
               <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(item.id)}
-                  className={`w-full rounded-lg border px-3 py-2.5 text-left transition ${
+                <div
+                  className={`group relative rounded-lg border text-left transition ${
                     active
                       ? "border-emerald-600/50 bg-emerald-950/30 ring-1 ring-emerald-600/30"
                       : "border-slate-800 bg-slate-900/60 hover:border-slate-600"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
-                    <span>{formatWhen(item.createdAt)}</span>
-                    <span
-                      className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${languageBadgeClass(item.language)}`}
-                    >
-                      {item.language}
-                    </span>
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-sm font-medium text-slate-200">
-                    {item.rootCauseSummary}
-                  </p>
-                  {item.stackHeadline && (
-                    <p className="mt-1 line-clamp-1 font-mono text-xs text-slate-500">
-                      {item.stackHeadline}
+                  <button
+                    type="button"
+                    onClick={() => onSelect(item.id)}
+                    className="w-full px-3 py-2.5 pr-10 text-left"
+                  >
+                    <div className="flex min-w-0 items-center gap-2 text-xs text-slate-500">
+                      <span className="min-w-0 truncate">
+                        {formatWhen(item.createdAt)}
+                      </span>
+                      <span
+                        className={`ml-auto shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${languageBadgeClass(item.language)}`}
+                      >
+                        {item.language}
+                      </span>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-sm font-medium text-slate-200">
+                      {item.rootCauseSummary}
                     </p>
-                  )}
-                </button>
+                    {item.stackHeadline && (
+                      <p className="mt-1 line-clamp-1 font-mono text-xs text-slate-500">
+                        {item.stackHeadline}
+                      </p>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    title="Remove from history"
+                    aria-label={`Delete analysis from ${formatWhen(item.createdAt)}`}
+                    onClick={() => onDelete(item.id)}
+                    className="absolute right-1.5 top-1.5 z-10 rounded-md p-1.5 text-slate-500 transition hover:bg-rose-950/55 hover:text-rose-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-40 [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100"
+                  >
+                    {deleting ? (
+                      <span
+                        className="block h-4 w-4 animate-pulse rounded-sm bg-slate-600"
+                        aria-hidden
+                      />
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </li>
             );
           })}

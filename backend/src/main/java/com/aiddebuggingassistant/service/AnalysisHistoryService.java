@@ -43,6 +43,13 @@ public class AnalysisHistoryService {
         return toDetail(entity);
     }
 
+    public void deleteById(UUID id) {
+        if (!analysisRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Analysis not found");
+        }
+        analysisRepository.deleteById(id);
+    }
+
     private AnalysisSummaryResponse toSummary(AnalysisEntity e) {
         return new AnalysisSummaryResponse(
                 e.getId(),

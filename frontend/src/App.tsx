@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { AnalysisRequestError, requestAnalysis } from "./api/analyze";
 import { apiBase } from "./api/client";
-import { fetchAnalysisDetail, fetchRecentAnalyses } from "./api/history";
+import {
+  deleteAnalysis,
+  fetchAnalysisDetail,
+  fetchRecentAnalyses,
+} from "./api/history";
 import { CodeMirrorField } from "./components/CodeMirrorField";
 import { ConfidenceBar } from "./components/ConfidenceBar";
 import { CopyButton } from "./components/CopyButton";
 import { HistorySidebar } from "./components/HistorySidebar";
-import type { AnalysisResult, AnalysisSummary, Language } from "./types/analysis";
+import type {
+  AnalysisResult,
+  AnalysisSummary,
+  Language,
+} from "./types/analysis";
 
 const LANGUAGES: Language[] = [
   "C#",
@@ -38,7 +46,10 @@ export default function App() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(
-    null
+    null,
+  );
+  const [deletingHistoryId, setDeletingHistoryId] = useState<string | null>(
+    null,
   );
 
   const loadHistory = useCallback(async () => {
@@ -49,7 +60,7 @@ export default function App() {
       setHistoryItems(items);
     } catch (e) {
       setHistoryError(
-        e instanceof Error ? e.message : "Could not load recent analyses."
+        e instanceof Error ? e.message : "Could not load recent analyses.",
       );
     } finally {
       setHistoryLoading(false);
@@ -99,7 +110,7 @@ export default function App() {
         setLoading(false);
       }
     },
-    [canSubmit, stackTrace, code, language, loadHistory]
+    [canSubmit, stackTrace, code, language, loadHistory],
   );
 
   const onSelectHistory = useCallback(async (id: string) => {
@@ -114,11 +125,33 @@ export default function App() {
       setResult(detail.analysis);
     } catch (e) {
       setHistoryError(
-        e instanceof Error ? e.message : "Could not open that analysis."
+        e instanceof Error ? e.message : "Could not open that analysis.",
       );
       setSelectedHistoryId(null);
     }
   }, []);
+
+  const onDeleteHistory = useCallback(
+    async (id: string) => {
+      setHistoryError(null);
+      setDeletingHistoryId(id);
+      try {
+        await deleteAnalysis(id);
+        setHistoryItems((prev) => prev.filter((x) => x.id !== id));
+        if (selectedHistoryId === id) {
+          setSelectedHistoryId(null);
+          setResult(null);
+        }
+      } catch (e) {
+        setHistoryError(
+          e instanceof Error ? e.message : "Could not delete that analysis.",
+        );
+      } finally {
+        setDeletingHistoryId(null);
+      }
+    },
+    [selectedHistoryId],
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -140,7 +173,7 @@ export default function App() {
       </header>
 
       <div className="mx-auto flex max-w-6xl flex-col xl:flex-row">
-        <main className="min-w-0 flex-1 px-6 py-8">
+        <main className="min-w-0 flex-1 py-8 pr-6">
           <form onSubmit={onSubmit} className="space-y-8">
             <section className="space-y-4">
               <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
@@ -294,8 +327,8 @@ export default function App() {
                                   Math.max(
                                     96,
                                     20 +
-                                      fix.suggestedCode.split("\n").length * 18
-                                  )
+                                      fix.suggestedCode.split("\n").length * 18,
+                                  ),
                                 )}px`}
                               />
                             </div>
@@ -314,7 +347,9 @@ export default function App() {
           loading={historyLoading}
           error={historyError}
           selectedId={selectedHistoryId}
+          deletingId={deletingHistoryId}
           onSelect={onSelectHistory}
+          onDelete={onDeleteHistory}
           onRetry={loadHistory}
         />
       </div>
