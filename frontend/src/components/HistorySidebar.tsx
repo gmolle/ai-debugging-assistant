@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import type { AnalysisSummary, Language } from "../types/analysis";
+import type {
+  AnalysisSummary,
+  HistoryLanguageFilter,
+  Language,
+} from "../types/analysis";
 import { LANGUAGES } from "../constants/languages";
 import { languageBadgeClass } from "../utils/languageBadge";
 import {
@@ -8,7 +12,7 @@ import {
 } from "../utils/relativeTime";
 import { Spinner } from "./Spinner";
 
-export type HistoryLanguageFilter = "all" | Language;
+export type { HistoryLanguageFilter };
 
 interface HistorySidebarProps {
   items: AnalysisSummary[];

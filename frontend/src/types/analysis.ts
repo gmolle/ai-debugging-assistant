@@ -12,6 +12,9 @@ export type Language =
   | "Swift"
   | "TypeScript";
 
+/** Sidebar filter: all languages or one specific language. */
+export type HistoryLanguageFilter = "all" | Language;
+
 export interface AnalyzeRequestBody {
   stackTrace: string;
   code: string;
