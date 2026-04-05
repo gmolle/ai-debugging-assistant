@@ -211,7 +211,7 @@ export default function App() {
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">
             AI Debugging Assistant
           </h1>
-          <p className="max-w-xl text-sm leading-relaxed text-zinc-500">
+          <p className="max-w-2xl text-sm leading-relaxed text-zinc-500">
             Paste a stack trace and the related code — get root cause, context,
             and copy-ready fixes.
           </p>
