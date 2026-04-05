@@ -122,6 +122,46 @@ In `backend/src/main/resources/application.yml`:
 - `app.openai`: `api-key` (from env), `model` (default `gpt-4o-mini`), `max-attempts`, `response-timeout`
 - `app.analysis.persist-results`: save successful analyses to Postgres (default `true`; tests use `false`)
 
+## Deploying the backend API
+
+The API is a Spring Boot JAR; use **managed PostgreSQL** (Neon, Supabase, Render Postgres, Railway Postgres, etc.) and set configuration via **environment variables** (never commit secrets).
+
+### Docker image
+
+From the **`backend/`** directory:
+
+```bash
+docker build -t ai-debug-api .
+docker run --rm -p 8080:8080 \
+  -e OPENAI_API_KEY=sk-... \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://HOST:5432/DB?sslmode=require \
+  -e SPRING_DATASOURCE_USERNAME=... \
+  -e SPRING_DATASOURCE_PASSWORD=... \
+  -e APP_CORS_ALLOWED_ORIGINS=https://your-app.vercel.app \
+  ai-debug-api
+```
+
+Health check: **`GET /actuator/health`** (includes DB when configured).
+
+### Environment variables (production)
+
+| Variable | Purpose |
+|----------|---------|
+| `OPENAI_API_KEY` | Required for `/api/analyze`. |
+| `SPRING_DATASOURCE_URL` | JDBC URL, e.g. `jdbc:postgresql://HOST:5432/DB?sslmode=require` |
+| `SPRING_DATASOURCE_USERNAME` | Postgres user |
+| `SPRING_DATASOURCE_PASSWORD` | Postgres password |
+| `APP_CORS_ALLOWED_ORIGINS` | Comma-separated browser origins (your Vercel URL + previews if needed). |
+| `PORT` | Optional; platforms like Render/Railway set this. Default **8080** in `application.yml`. |
+
+After the API has a public **HTTPS** URL, set **`VITE_API_BASE_URL`** on Vercel to that origin (no trailing slash) and redeploy the frontend.
+
+### Platform notes
+
+- **Render**: New **Web Service** → Docker, **Dockerfile path** `backend/Dockerfile`, **Docker build context** `backend`. Add the env vars above; create a **PostgreSQL** instance and copy its **Internal Database URL** into `SPRING_DATASOURCE_*` (use the JDBC form your provider documents).
+- **Railway**: New project → deploy from GitHub → set **root directory** to `backend` (or use a Dockerfile service pointing at this repo with context `backend`). Add Postgres plugin and wire variables; Railway sets `PORT` automatically.
+- **Fly.io**: `fly launch` from `backend/` after installing the CLI; set secrets with `fly secrets set`.
+
 ## Confidence scores
 
 Model-returned fix confidence values outside `[0, 1]` are **clamped** to that range (documented for the UI); see the analysis service when implemented.
