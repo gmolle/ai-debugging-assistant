@@ -6,6 +6,7 @@ import {
   formatExactDateTime,
   formatRelativeTime,
 } from "../utils/relativeTime";
+import { Spinner } from "./Spinner";
 
 export type HistoryLanguageFilter = "all" | Language;
 
@@ -101,7 +102,10 @@ export function HistorySidebar({
         )}
 
         {loading && unfilteredTotal === 0 && (
-          <p className="text-sm text-zinc-500">Loading…</p>
+          <div className="flex items-center gap-2.5 text-sm text-zinc-500">
+            <Spinner size="sm" className="text-amber-500/80" />
+            <span>Loading history…</span>
+          </div>
         )}
 
         {!loading && !error && unfilteredTotal === 0 && (
@@ -128,6 +132,10 @@ export function HistorySidebar({
               <li key={item.id}>
                 <div
                   className={`group relative rounded-xl border text-left shadow-sm transition ${
+                    deleting
+                      ? "border-zinc-700/50 bg-zinc-900/25 opacity-70"
+                      : ""
+                  } ${
                     active
                       ? "border-amber-500/40 bg-amber-950/20 ring-1 ring-amber-500/15"
                       : "border-zinc-800/70 bg-zinc-900/40 ring-1 ring-white/[0.03] hover:border-zinc-700/80 hover:bg-zinc-900/55"
@@ -136,7 +144,8 @@ export function HistorySidebar({
                   <button
                     type="button"
                     onClick={() => onSelect(item.id)}
-                    className="w-full px-3 py-2.5 pr-10 text-left"
+                    disabled={deleting}
+                    className="w-full px-3 py-2.5 pr-10 text-left disabled:cursor-not-allowed"
                   >
                     <div className="flex min-w-0 items-center gap-2 text-xs text-zinc-500">
                       <time
@@ -164,16 +173,18 @@ export function HistorySidebar({
                   <button
                     type="button"
                     disabled={deleting}
-                    title="Remove from history"
-                    aria-label={`Delete analysis from ${formatExactDateTime(item.createdAt)}`}
+                    title={deleting ? "Deleting…" : "Remove from history"}
+                    aria-busy={deleting}
+                    aria-label={
+                      deleting
+                        ? "Deleting analysis…"
+                        : `Delete analysis from ${formatExactDateTime(item.createdAt)}`
+                    }
                     onClick={() => onDelete(item.id)}
-                    className="absolute right-1.5 top-1.5 z-10 rounded-md p-1.5 text-zinc-500 transition hover:bg-rose-950/55 hover:text-rose-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-40 [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100"
+                    className="absolute right-1.5 top-1.5 z-10 rounded-md p-1.5 text-zinc-500 transition hover:bg-rose-950/55 hover:text-rose-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-100 [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100"
                   >
                     {deleting ? (
-                      <span
-                        className="block h-4 w-4 animate-pulse rounded-sm bg-zinc-600"
-                        aria-hidden
-                      />
+                      <Spinner size="sm" className="text-amber-400" />
                     ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
